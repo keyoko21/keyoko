@@ -1,0 +1,257 @@
+/project-folder
+│
+├── server.js          # Серверная часть на Node.js с Puppeteer
+├── index.html         # Клиентская часть (HTML + JavaScript)
+├── package.json       # Файл зависимостей для Node.js
+└── node_modules/      # Папка с установленными зависимостями
+npm init -y
+npm install express puppeteer cors
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфигуратор ПК</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            font-size: 16px;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            max-width: 1000px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.1rem;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 1.1rem;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .total-row {
+            font-weight: bold;
+            background: #f0f8ff;
+        }
+        .link-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Конфигуратор ПК</h1>
+    </header>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Компоненты</th>
+                    <th>Ссылки</th>
+                    <th>Название товара</th>
+                    <th>Цена</th>
+                </tr>
+            </thead>
+            <tbody id="configTable">
+                <tr>
+                    <td>Процессор</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Материнская плата</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Оперативная память</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>SSD</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Видеокарта</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Охлаждение для CPU</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Корпус</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Вентиляторы</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr>
+                    <td>Монитор</td>
+                    <td><input type="text" onblur="fetchProductData(this)"></td>
+                    <td><input type="text" placeholder="Введите название"></td>
+                    <td><input type="number" placeholder="Введите цену" oninput="calculateTotal()"></td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="3">Общая сумма:</td>
+                    <td id="totalPrice">0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button onclick="generateLink()">Создать ссылку на конфигурацию</button>
+        <div class="link-container" id="linkContainer" style="display: none;">
+            <input type="text" id="generatedLink" readonly>
+            <button onclick="copyLink()">Копировать ссылку</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2023 Конфигуратор ПК
+    </footer>
+
+    <script>
+        // Функция для получения данных о товаре с сервера
+        async function fetchProductData(inputElement) {
+            const link = inputElement.value.trim();
+            const row = inputElement.closest('tr');
+            const productNameInput = row.querySelector('td:nth-child(3) input');
+            const priceInput = row.querySelector('td:nth-child(4) input');
+
+            if (!link) {
+                productNameInput.value = '';
+                priceInput.value = '';
+                return;
+            }
+
+            try {
+                console.log(`Отправка запроса для ссылки: ${link}`);
+                const response = await fetch('http://localhost:3000/get-product-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: link }),
+                });
+
+                const data = await response.json();
+
+                if (data.productName) {
+                    console.log(`Получено название: ${data.productName}`);
+                    productNameInput.value = data.productName;
+                } else {
+                    console.error('Название товара не найдено');
+                    productNameInput.value = ''; // Очищаем поле, если название не найдено
+                }
+
+                if (data.productPrice) {
+                    console.log(`Получена цена: ${data.productPrice}`);
+                    priceInput.value = data.productPrice;
+                    calculateTotal(); // Пересчитываем общую сумму
+                } else {
+                    console.error('Цена товара не найдена');
+                    priceInput.value = ''; // Очищаем поле, если цена не найдена
+                }
+            } catch (error) {
+                console.error('Ошибка при получении данных:', error);
+                productNameInput.value = ''; // Очищаем поле в случае ошибки
+                priceInput.value = '';
+            }
+        }
+
+        // Функция для расчета общей суммы
+        function calculateTotal() {
+            const priceInputs = document.querySelectorAll('#configTable td:nth-child(4) input');
+            let total = 0;
+
+            priceInputs.forEach(input => {
+                const value = parseFloat(input.value);
+                if (!isNaN(value)) total += value;
+            });
+
+            document.getElementById('totalPrice').textContent = total.toFixed(2);
+        }
+
+        // Функция для создания ссылки на конфигурацию
+        function generateLink() {
+            const rows = document.querySelectorAll('#configTable tr');
+            const params = new URLSearchParams();
+
+            rows.forEach(row => {
+                const component = row.cells[0].textContent.trim();
+                const link = row.cells[1].querySelector('input').value.trim();
+                const name = row.cells[2].querySelector('input').value.trim();
+                const price = row.cells[3].querySelector('input').value.trim();
+
+                params.append(`${component}_link`, link);
+                params.append(`${component}_name`, name);
+                params.append(`${component}_price`, price);
+            });
+
+            const fullUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+            document.getElementById('generatedLink').value = fullUrl;
+            document.getElementById('linkContainer').style.display = 'block';
+        }
+
+        // Функция для копирования ссылки
+        function copyLink() {
+            const generatedLinkInput
